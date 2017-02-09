@@ -2,6 +2,13 @@ import React, { Component, PropTypes } from 'react';
 import debounce from './utils/debounce';
 import transformProperty from './utils/transformProperty';
 
+// class SlideItem extends Component {
+//     render() {
+//         console.log('SlideItem');
+//         return this.props.children;
+//     }
+// }
+
 class ReactSiema extends Component {
     static propTypes = {
         resizeDebounce: PropTypes.number,
@@ -15,12 +22,16 @@ class ReactSiema extends Component {
         children: PropTypes.oneOfType([
             PropTypes.element,
             PropTypes.arrayOf(PropTypes.element)
-        ])
+        ]),
     };
 
     events = [
-        'onTouchStart', 'onTouchEnd', 'onTouchMove', 'onMouseDown', 'onMouseUp', 'onMouseLeave', 'onMouseMove'
+        'onTouchStart', 'onTouchEnd', 'onTouchMove', 'onMouseDown', 'onMouseUp', 'onMouseLeave', 'onMouseMove', 'onClick'
     ];
+
+    state = {
+        dragged: false,
+    }
 
     constructor(props) {
         super();
@@ -202,11 +213,20 @@ class ReactSiema extends Component {
         }
     }
 
+    onClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
     onMouseDown(e) {
         e.preventDefault();
         e.stopPropagation();
+
         this.pointerDown = true;
         this.drag.start = e.pageX;
+
+        // At this point it's only a click
+        this.setState({ dragged: false });
     }
 
     onMouseUp(e) {
@@ -217,9 +237,14 @@ class ReactSiema extends Component {
             webkitTransition: `all ${this.config.duration}ms ${this.config.easing}`,
             transition: `all ${this.config.duration}ms ${this.config.easing}`
         });
+
+        // If drag.end has a value > 0, the slider has been dragged, update
+        // state accordingly
         if (this.drag.end) {
             this.updateAfterDrag();
+            this.setState({ dragged: true });
         }
+        
         this.clearDrag();
     }
 
@@ -255,14 +280,15 @@ class ReactSiema extends Component {
             <div
                 ref={(selector) => this.selector = selector}
                 style={{ overflow: 'hidden' }}
-                {...this.events.reduce((props, event) => Object.assign({}, props, { [event]: this[event] }), {})}
-            >
+                {...this.events.reduce((props, event) => Object.assign({}, props, { [event]: this[event] }), {})}>
                 <div ref={(sliderFrame) => this.sliderFrame = sliderFrame}>
-                    {React.Children.map(this.props.children, (children, index) =>
-                        React.cloneElement(children, {
+                    {React.Children.map(this.props.children, (children, index) => {
+                        return React.cloneElement(children, {
                             key: index,
-                            style: { float: 'left' }
+                            style: { float: 'left' },
+                            isClick: !this.state.dragged,
                         })
+                    }
                     )}
                 </div>
             </div>

@@ -3,16 +3,48 @@ import ReactSiema from './lib/ReactSiema';
 import logo from './logo.svg';
 import './App.css';
 
+class SlideItem extends Component {
+
+    static propTypes = {
+        style: React.PropTypes.object.isRequired,
+        isClick: React.PropTypes.bool,
+    }
+
+    static defaultProps = {
+        style: { float: 'left' },
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return false;
+    }
+
+    handleClick = () => {
+        if (this.props.isClick) {
+            console.log('Do the thing on click!');
+        } else {
+            console.log('Dragging, don\'t click!');
+        }
+    }
+
+    render() {
+        return (
+            <div style={ this.props.style }>
+                <img src={ this.props.src } alt="slide" onClick={ this.handleClick } />
+            </div>
+        );
+    }
+}
+
 class App extends Component {
     state = {
         slides: [
-            <img src="https://unsplash.it/600/350?image=10" alt="slide" />,
-            <img src="https://unsplash.it/600/350?image=11" alt="slide" />,
-            <img src="https://unsplash.it/600/350?image=12" alt="slide" />,
-            <img src="https://unsplash.it/600/350?image=13" alt="slide" />,
-            <img src="https://unsplash.it/600/350?image=14" alt="slide" />,
-            <img src="https://unsplash.it/600/350?image=15" alt="slide" />,
-            <img src="https://unsplash.it/600/350?image=16" alt="slide" />,
+            'https://unsplash.it/600/350?image=10',
+            'https://unsplash.it/600/350?image=11',
+            'https://unsplash.it/600/350?image=12',
+            'https://unsplash.it/600/350?image=13',
+            'https://unsplash.it/600/350?image=14',
+            'https://unsplash.it/600/350?image=15',
+            'https://unsplash.it/600/350?image=16',
         ]
     };
 
@@ -29,7 +61,11 @@ class App extends Component {
                     </h4>
                     <div className="App-intro__slider">
                         <ReactSiema ref={(siema) => this.siema = siema}>
-                            {this.state.slides.map((slide, index) => <div key={index}>{slide}</div>)}
+                            {this.state.slides.map((slide, index) => {
+                                return (
+                                    <SlideItem key={index} src={ slide } />
+                                )
+                            } ) }
                         </ReactSiema>
                         <button onClick={() => this.siema.prev()}>Prev</button>
                         <button onClick={() => this.siema.next()}>Next</button>
