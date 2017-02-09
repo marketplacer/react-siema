@@ -30,13 +30,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-// class SlideItem extends Component {
-//     render() {
-//         console.log('SlideItem');
-//         return this.props.children;
-//     }
-// }
-
 var ReactSiema = function (_Component) {
     _inherits(ReactSiema, _Component);
 
@@ -152,8 +145,15 @@ var ReactSiema = function (_Component) {
         value: function prev() {
             if (this.currentSlide === 0 && this.config.loop) {
                 this.currentSlide = this.innerElements.length - this.perPage;
+                if (this.props.onAfterChange) this.props.onAfterChange();
             } else {
-                this.currentSlide = Math.max(this.currentSlide - 1, 0);
+                var nextSlide = Math.max(this.currentSlide - 1, 0);
+                var shouldFireEvent = nextSlide !== this.currentSlide && this.props.onAfterChange;
+
+                this.currentSlide = nextSlide;
+
+                // If the next slide isn't the same, then fire the onAfterChange handler
+                if (shouldFireEvent) this.props.onAfterChange();
             }
             this.slideToCurrent();
         }
@@ -162,8 +162,15 @@ var ReactSiema = function (_Component) {
         value: function next() {
             if (this.currentSlide === this.innerElements.length - this.perPage && this.config.loop) {
                 this.currentSlide = 0;
+                if (this.props.onAfterChange) this.props.onAfterChange();
             } else {
-                this.currentSlide = Math.min(this.currentSlide + 1, this.innerElements.length - this.perPage);
+                var nextSlide = Math.min(this.currentSlide + 1, this.innerElements.length - this.perPage);
+                var shouldFireEvent = nextSlide !== this.currentSlide && this.props.onAfterChange;
+
+                this.currentSlide = nextSlide;
+
+                // If the next slide isn't the same, then fire the onAfterChange handler
+                if (shouldFireEvent) this.props.onAfterChange();
             }
             this.slideToCurrent();
         }
@@ -172,6 +179,7 @@ var ReactSiema = function (_Component) {
         value: function goTo(index) {
             this.currentSlide = Math.min(Math.max(index, 0), this.innerElements.length - 1);
             this.slideToCurrent();
+            if (this.props.onAfterChange) this.props.onAfterChange();
         }
     }, {
         key: 'slideToCurrent',
@@ -358,6 +366,9 @@ ReactSiema.propTypes = {
     draggable: _react.PropTypes.bool,
     threshold: _react.PropTypes.number,
     loop: _react.PropTypes.bool,
-    children: _react.PropTypes.oneOfType([_react.PropTypes.element, _react.PropTypes.arrayOf(_react.PropTypes.element)])
+    children: _react.PropTypes.oneOfType([_react.PropTypes.element, _react.PropTypes.arrayOf(_react.PropTypes.element)]),
+
+    // Fire events after change
+    onAfterChange: _react.PropTypes.func
 };
 exports.default = ReactSiema;

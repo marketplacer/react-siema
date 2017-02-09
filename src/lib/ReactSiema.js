@@ -2,13 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import debounce from './utils/debounce';
 import transformProperty from './utils/transformProperty';
 
-// class SlideItem extends Component {
-//     render() {
-//         console.log('SlideItem');
-//         return this.props.children;
-//     }
-// }
-
 class ReactSiema extends Component {
     static propTypes = {
         resizeDebounce: PropTypes.number,
@@ -23,6 +16,9 @@ class ReactSiema extends Component {
             PropTypes.element,
             PropTypes.arrayOf(PropTypes.element)
         ]),
+
+        // Fire events after change
+        onAfterChange: PropTypes.func,
     };
 
     events = [
@@ -125,8 +121,15 @@ class ReactSiema extends Component {
     prev() {
         if (this.currentSlide === 0 && this.config.loop) {
             this.currentSlide = this.innerElements.length - this.perPage;
+            if (this.props.onAfterChange) this.props.onAfterChange();
         } else {
-            this.currentSlide = Math.max(this.currentSlide - 1, 0);
+            const nextSlide = Math.max(this.currentSlide - 1, 0);
+            const shouldFireEvent = nextSlide !== this.currentSlide && this.props.onAfterChange;
+
+            this.currentSlide = nextSlide;
+
+            // If the next slide isn't the same, then fire the onAfterChange handler
+            if (shouldFireEvent) this.props.onAfterChange();
         }
         this.slideToCurrent();
     }
@@ -134,8 +137,15 @@ class ReactSiema extends Component {
     next() {
         if (this.currentSlide === this.innerElements.length - this.perPage && this.config.loop) {
             this.currentSlide = 0;
+            if (this.props.onAfterChange) this.props.onAfterChange();
         } else {
-            this.currentSlide = Math.min(this.currentSlide + 1, this.innerElements.length - this.perPage);
+            const nextSlide = Math.min(this.currentSlide + 1, this.innerElements.length - this.perPage);
+            const shouldFireEvent = nextSlide !== this.currentSlide && this.props.onAfterChange;
+
+            this.currentSlide = nextSlide;
+
+            // If the next slide isn't the same, then fire the onAfterChange handler
+            if (shouldFireEvent) this.props.onAfterChange();
         }
         this.slideToCurrent();
     }
@@ -143,6 +153,7 @@ class ReactSiema extends Component {
     goTo(index) {
         this.currentSlide = Math.min(Math.max(index, 0), this.innerElements.length - 1);
         this.slideToCurrent();
+        if (this.props.onAfterChange) this.props.onAfterChange();
     }
 
     slideToCurrent() {
@@ -244,7 +255,7 @@ class ReactSiema extends Component {
             this.updateAfterDrag();
             this.setState({ dragged: true });
         }
-        
+
         this.clearDrag();
     }
 
